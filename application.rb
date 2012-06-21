@@ -48,6 +48,8 @@ post '/start_game.json' do
   t.ask(
     name: "guess",
     attempts: 3,
+    mode: 'speech',
+    voice: 'Veronica',
     say:[
           { value: "Sorry. I didn't hear anything.", event: 'timeout' },
           { value: "Sorry. I didn't understand that." , event: 'nomatch:1 nomatch:2 nomatch:3'},
