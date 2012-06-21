@@ -53,7 +53,7 @@ post '/start_game.json' do
           { value: "Sorry. I didn't understand that." , event: 'nomatch:1 nomatch:2 nomatch:3'},
           { value: "You have #{settings.number_of_guesses - game.guesses.count} guesses left. What is your next guess?" }
         ],
-    choices: { value: "a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z" }
+    choices: { value: "a(eh, a, alpha), b(b, bee, bea, bravo), c(c, cee, sea, charlie), d(d, dee, delta), e(e, echo), f(f, ef, foxtrot), g(g, gee, golf), h(h, hotel), i(i, eye, india), j(j, jay, juliet), k(k, cay, kay, kilo), l(l, elle, lima), m(m, em, mike), n(n, enn, november), o(o, oh, ohh, oscar), p(p, pee, papa), q(q, queue, quebec), r(r, arr, romeo), s(s, sierra), t(t, tee, tea, tango), u(u, you, yew, uniform), v(v, vee, victor), w(w, whiskey), x(x, xray), y(y, why, yankee), z(z, zee, zulu)" }
   )
   t.on event: 'continue', next: '/next_guess.json'
   t.on event: 'incomplete', next: '/hangup.json'
