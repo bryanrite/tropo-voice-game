@@ -44,7 +44,7 @@ post '/start_game.json' do
 
   t = Tropo::Generator.new
   t.call(to: "#{game.phone_number}")
-  t.say(value: "Welcome to the voice enabled hangman game.  You have #{settings.number_of_guesses} chances to solve the puzzle.  Please say one letter at a time.")
+  t.say(value: "Welcome to the voice enabled hang man game.  You have #{settings.number_of_guesses} chances to solve the puzzle.  Please say one letter at a time.")
   t.ask(
     name: "guess",
     attempts: 3,
