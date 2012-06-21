@@ -33,7 +33,6 @@ post '/start_game' do
 end
 
 get '/hang_man/:id' do
-  puts params[:id]
   haml :game
 end
 
@@ -45,11 +44,45 @@ post '/start_game.json' do
 
   t = Tropo::Generator.new
   t.call(to: "#{game.phone_number}")
-  t.say(value: 'Starting game.')
+  t.say(value: "Welcome to the voice enabled hangman game.  You have #{settings.number_of_guesses} chances to solve the puzzle.  Please say one letter at a time.")
+  t.ask(
+    name: "guess",
+    attempts: 3,
+    say:[
+          { value: "Sorry. I didn't hear anything.", event: 'timeout' },
+          { value: "Sorry. I didn't understand that." , event: 'nomatch:1 nomatch:2 nomatch:3'},
+          { value: "You have #{settings.number_of_guesses - game.guesses.count} guesses left. What is your next guess?" }
+        ],
+    choices: { value: "a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z" }
+  )
+  t.on event: 'continue', next: '/next_guess.json'
+  t.on event: 'incomplete', next: '/hangup.json'
+  t.response
+end
+
+post '/hangup.json' do
+  t = Tropo::Generator.new
+  t.say(value: "I couldn't understand you.  Good bye.")
+  t.response
+end
+
+post '/next_guess.json' do
+  # Get the previous questions response and save it.
+  v = Tropo::Generator.parse request.env["rack.input"].read
+  game = Game[session[:game_id]]
+  response = v[:result][:actions][:guess][:value] rescue nil
+  # survey.questions[session[:question]-1].update(response: response) unless response.nil?
+
+  logger.info "Received guess: #{response} from player: #{game.phone_number}"
+
+  # Ask for the next guess.
+  t = Tropo::Generator.new
+  t.say(value: "Nice guess. I guess.")
   t.response
 end
 
 private
+
   def clean_number(phone_number)
     return "+#{phone_number.gsub(/\D/,'')}"
   end
