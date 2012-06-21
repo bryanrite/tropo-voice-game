@@ -19,6 +19,16 @@ get '/' do
   haml :index
 end
 
+post '/start_game' do
+  puts params[:phone]
+  redirect '/hang_man/1000'
+end
+
+get '/hang_man/:id' do
+  puts params[:id]
+  haml :game
+end
+
 post '/start_game.json' do
   v = Tropo::Generator.parse request.env["rack.input"].read
   game = Game[v[:session][:parameters][:game]]
