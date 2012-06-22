@@ -1,2 +1,14 @@
-%h1 Game UI Here.
-%p= "The board so far: #{@game.board}"
+.row
+  .span6.offset3
+    - @game.board.each_with_index do |move, index|
+      - if index % 3 == 0
+        .row
+      .span2.square
+        %p= move
+
+- if true
+  .row.commands
+    .span6.offset3
+      %form.form-horizontal{action: '/start_game', method: 'post'}
+        %input{name: 'phone', type: 'hidden', value: "#{@game.phone_number}"}
+        %input.btn.btn-success{type: 'submit', value: 'Play Again?'}
