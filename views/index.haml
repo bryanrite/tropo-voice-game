@@ -1,0 +1,15 @@
+.start_game
+  .row
+    .span8.offset2.well
+      %h1 Voice Enabled Tic Tac Toe
+      %h3 How to Play:
+      %p Simply fill in your telephone number below and click 'Play Tic Tac Toe'.
+      %p We will give you a call.  Choose each square by saying the number you want.
+
+      %em Be sure to enter your entire phone number, including your country code.  For example: 1-555-123-4567
+
+      .row
+        .span6.offset1
+          %form.form-horizontal{action: '/start_game', method: 'post'}
+            %input{name: 'phone', type: 'text', placeholder: 'Enter your phone number.'}
+            %input.btn.btn-success{type: 'submit', value: 'Play Tic Tac Toe'}
