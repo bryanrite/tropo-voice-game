@@ -6,7 +6,6 @@ require 'tropo-webapi-ruby'
 require 'httparty'
 require 'haml'
 
-config_file 'config/config.yml'
 use Rack::Session::Pool
 
 # Autoload Directories
@@ -26,7 +25,7 @@ post '/start_game' do
   logger.info "Starting a new game with phone number: #{phone}"
 
   # Make the outbound call and start the game.
-  HTTParty.get "http://api.tropo.com/1.0/sessions?action=create&token=#{settings.tropo_app_token}&game=#{game.id}"
+  HTTParty.get "http://api.tropo.com/1.0/sessions?action=create&token=#{ENV['TROPO_TOKEN']}&game=#{game.id}"
 
   redirect "/game/#{game.id}"
 end
