@@ -57,7 +57,6 @@ post '/hangup.json' do
 end
 
 post '/next_guess.json' do
-  # Get the previous guess response and save it.
   v = Tropo::Generator.parse request.env["rack.input"].read
   game = Game[session[:game_id]]
   move = v[:result][:actions][:move][:value].to_i rescue nil
@@ -80,9 +79,7 @@ post '/next_guess.json' do
     t.say(value: "Good moves. Congratulations.", voice: 'Simon')
     return t.response
   elsif game.over?
-    t.say(value: "Looks like nobody wins this game.  Isn't Tic Tac Toe fun.", voice: 'Simon')
-    t.say(value: "what a #{%w(great good boring exciting).sample} game. till next time.", voice: 'Veronica')
-    return t.response
+    return game_over_response t
   end
 
   # Computers turn.
@@ -94,11 +91,9 @@ post '/next_guess.json' do
   # Check win conditions again
   if game.won? 'O'
     t.say(value: "I win.  Better luck next time.", voice: 'Veronica')
-    return t.response
+    t.response
   elsif game.over?
-    t.say(value: "Looks like nobody wins this game.  Isn't Tic Tac Toe fun.", voice: 'Simon')
-    t.say(value: "what a #{%w(great good boring exciting).sample} game. till next time.", voice: 'Veronica')
-    return t.response
+    game_over_response t
   else
     ask_for_move t, game
   end
@@ -119,6 +114,12 @@ private
 
     tropo.on event: 'continue', next: '/next_guess.json'
     tropo.on event: 'incomplete', next: '/hangup.json'
+    tropo.response
+  end
+
+  def game_over_response tropo
+    tropo.say(value: "Looks like nobody wins this game.  Isn't Tic Tac Toe fun.", voice: 'Simon')
+    tropo.say(value: "what a #{%w(great good boring exciting).sample} game. till next time.", voice: 'Veronica')
     tropo.response
   end
 
