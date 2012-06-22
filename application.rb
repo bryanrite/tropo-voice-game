@@ -34,7 +34,12 @@ end
 get '/game/:id' do
   @game = Game[params[:id]]
   error(404, "Couldn't find game") if @game.nil?
-  haml :game
+
+  if request.xhr?
+    haml :board, layout: false
+  else
+    haml :game
+  end
 end
 
 post '/start_game.json' do

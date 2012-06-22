@@ -1,14 +1,17 @@
-.row
-  .span6.offset3
-    - @game.board.each_with_index do |move, index|
-      - if index % 3 == 0
-        .row
-      .span2.square
-        %p= move
+.board
+  = haml :board
 
-- if true
-  .row.commands
-    .span6.offset3
-      %form.form-horizontal{action: '/start_game', method: 'post'}
-        %input{name: 'phone', type: 'hidden', value: "#{@game.phone_number}"}
-        %input.btn.btn-success{type: 'submit', value: 'Play Again?'}
+:javascript
+  $(function() {
+    (function poll() {
+      setTimeout(function() {
+        $.ajax({
+          url: "/game/#{@game.id}",
+          success: function(data) {
+            $('.board').html(data);
+            poll();
+          },
+        });
+      }, 2000);
+    })();
+  });
