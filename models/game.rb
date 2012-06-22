@@ -18,12 +18,14 @@ class Game < Sequel::Model
     validates_type Array, [:board]
   end
 
-  def won? player
+  def won?
     # bit-map based tic tac toe winner algorithm.
-    @@wins.any? do |win|
-      moves = board.inject(0) { |accum, position| (accum * 2) + ((position == player) ? 1 : 0) }
-      (win ^ moves) & win == 0
-    end
+    ['X', 'O'].find do |player|
+      @@wins.any? do |win|
+        moves = board.inject(0) { |accum, position| (accum * 2) + ((position == player) ? 1 : 0) }
+        (win ^ moves) & win == 0
+      end
+    end || false
   end
 
   def over?

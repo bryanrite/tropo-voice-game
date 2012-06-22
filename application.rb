@@ -79,7 +79,7 @@ post '/next_guess.json' do
   end
 
   # Check win conditions
-  if game.won? 'X'
+  if game.won?
     t.say(value: "#{%w(shucks darn drat humbug).sample}, you win. I'll get you next time.", voice: 'Veronica')
     t.say(value: "Good moves. Congratulations.", voice: 'Simon')
     return t.response
@@ -94,7 +94,7 @@ post '/next_guess.json' do
   logger.info "Computer chooses: #{computers_choice} for the board: #{game.board}"
 
   # Check win conditions again
-  if game.won? 'O'
+  if game.won?
     t.say(value: "I win.  Better luck next time.", voice: 'Veronica')
     t.response
   elsif game.over?
