@@ -66,6 +66,7 @@ post '/next_guess.json' do
 
   t = Tropo::Generator.new
 
+  # Your move.
   if game.valid_move?(move)
     game.make_move move, 'X'
   else
@@ -73,22 +74,37 @@ post '/next_guess.json' do
     return ask_for_move t, game
   end
 
-  if game.won?
+  # Check win conditions
+  if game.won? 'X'
     t.say(value: "#{%w(shucks darn drat humbug).sample}, you win. I'll get you next time.", voice: 'Veronica')
-    t.response
+    t.say(value: "Good moves. Congratulations.", voice: 'Simon')
+    return t.response
   elsif game.over?
     t.say(value: "Looks like nobody wins this game.  Isn't Tic Tac Toe fun.", voice: 'Simon')
-    t.say(value: "#{%w(great good boring exciting).sample} game. bye.", voice: 'Veronica')
-    t.response
+    t.say(value: "what a #{%w(great good boring exciting).sample} game. till next time.", voice: 'Veronica')
+    return t.response
+  end
+
+  # Computers turn.
+  computers_choice = game.make_computers_choice
+  t.say(value: "I choose #{computers_choice}", voice: 'Veronica')
+
+  logger.info "Computer chooses: #{computers_choice} for the board: #{game.board}"
+
+  # Check win conditions again
+  if game.won? 'O'
+    t.say(value: "I win.  Better luck next time.", voice: 'Veronica')
+    return t.response
+  elsif game.over?
+    t.say(value: "Looks like nobody wins this game.  Isn't Tic Tac Toe fun.", voice: 'Simon')
+    t.say(value: "what a #{%w(great good boring exciting).sample} game. till next time.", voice: 'Veronica')
+    return t.response
   else
     ask_for_move t, game
   end
 end
 
 private
-
-  def check_end_conditions(tropo, game)
-  end
 
   def ask_for_move(tropo, game)
   tropo.ask name: "move",
@@ -97,7 +113,7 @@ private
       say:[
             { value: "Sorry. I didn't hear anything.", event: 'timeout' },
             { value: "Sorry. I didn't understand that." , event: 'nomatch:1 nomatch:2 nomatch:3'},
-            { value: "Which square would you like" }
+            { value: "Which square would you like." }
           ],
       choices: { value: "[1 DIGIT]" }
 
