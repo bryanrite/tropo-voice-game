@@ -22,7 +22,7 @@ end
 post '/start_game' do
   phone = clean_number params[:phone]
   word = WORD_LIST.sample
-  game = Game.create(word: word, guesses: %w(), phone_number: phone)
+  game = Game.create(word: word.downcase, guesses: %w(), phone_number: phone)
 
   logger.info "Starting a game with the word: #{word} to phone number: #{phone}"
 
@@ -33,6 +33,8 @@ post '/start_game' do
 end
 
 get '/hang_man/:id' do
+  @game = Game[params[:id]]
+  error(404, "Couldn't find game") if @game.nil?
   haml :game
 end
 
@@ -40,26 +42,11 @@ post '/start_game.json' do
   v = Tropo::Generator.parse request.env["rack.input"].read
   game = Game[v[:session][:parameters][:game]]
   session[:game_id] = game.id
-  session[:guesses] = 0
 
   t = Tropo::Generator.new
   t.call(to: "#{game.phone_number}")
   t.say(value: "Welcome to the voice enabled hang man game.  You have #{settings.number_of_guesses} chances to solve the puzzle.  Please say one letter at a time.")
-  t.ask(
-    name: "guess",
-    attempts: 3,
-    mode: 'speech',
-    voice: 'Veronica',
-    say:[
-          { value: "Sorry. I didn't hear anything.", event: 'timeout' },
-          { value: "Sorry. I didn't understand that." , event: 'nomatch:1 nomatch:2 nomatch:3'},
-          { value: "You have #{settings.number_of_guesses - game.guesses.count} guesses left. What is your next guess?" }
-        ],
-    choices: { value: "a(eh, a, alpha), b(b, bee, bea, bravo), c(c, cee, sea, charlie), d(d, dee, delta), e(e, echo), f(f, ef, foxtrot), g(g, gee, golf), h(h, hotel), i(i, eye, india), j(j, jay, juliet), k(k, cay, kay, kilo), l(l, elle, lima), m(m, em, mike), n(n, enn, november), o(o, oh, ohh, oscar), p(p, pee, papa), q(q, queue, quebec), r(r, arr, romeo), s(s, sierra), t(t, tee, tea, tango), u(u, you, yew, uniform), v(v, vee, victor), w(w, whiskey), x(x, xray), y(y, why, yankee), z(z, zee, zulu)" }
-  )
-  t.on event: 'continue', next: '/next_guess.json'
-  t.on event: 'incomplete', next: '/hangup.json'
-  t.response
+  ask_for_guess(t, game)
 end
 
 post '/hangup.json' do
@@ -69,21 +56,44 @@ post '/hangup.json' do
 end
 
 post '/next_guess.json' do
-  # Get the previous questions response and save it.
+  # Get the previous guess response and save it.
   v = Tropo::Generator.parse request.env["rack.input"].read
   game = Game[session[:game_id]]
   response = v[:result][:actions][:guess][:value] rescue nil
-  # survey.questions[session[:question]-1].update(response: response) unless response.nil?
+
+  game.guesses << response unless response.nil? || response.empty?
+  game.save
 
   logger.info "Received guess: #{response} from player: #{game.phone_number}"
 
-  # Ask for the next guess.
+  # What to do now.
   t = Tropo::Generator.new
-  t.say(value: "Nice guess. I guess.")
-  t.response
+  if game.solved?
+    t.say "You win.  You guessed the word, #{game.word}, in #{game.guesses.count} guesses."
+  elsif game.over?
+    t.say "You are out of guesses. Sorry, you lost."
+  else
+    ask_for_guess t, game
+  end
 end
 
 private
+
+  def ask_for_guess(tropo, game)
+  tropo.ask name: "guess",
+      attempts: 3,
+      mode: 'speech',
+      say:[
+            { value: "Sorry. I didn't hear anything.", event: 'timeout' },
+            { value: "Sorry. I didn't understand that." , event: 'nomatch:1 nomatch:2 nomatch:3'},
+            { value: "You have #{settings.number_of_guesses - game.guesses.count} guesses left. What is your next guess?" }
+          ],
+      choices: { value: "a(eh, a, alpha), b(b, bee, bea, bravo), c(c, cee, sea, charlie), d(d, dee, delta), e(e, echo), f(f, ef, foxtrot), g(g, gee, golf), h(h, hotel), i(i, eye, india), j(j, jay, juliet), k(k, cay, kay, kilo), l(l, elle, lima), m(m, em, mike), n(n, enn, november), o(o, oh, ohh, oscar), p(p, pee, papa), q(q, queue, quebec), r(r, arr, romeo), s(s, sierra), t(t, tee, tea, tango), u(u, you, yew, uniform), v(v, vee, victor), w(w, whiskey), x(x, xray), y(y, why, yankee), z(z, zee, zulu)" }
+
+    tropo.on event: 'continue', next: '/next_guess.json'
+    tropo.on event: 'incomplete', next: '/hangup.json'
+    tropo.response
+  end
 
   def clean_number(phone_number)
     return "+#{phone_number.gsub(/\D/,'')}"
