@@ -81,7 +81,7 @@ post '/next_guess.json' do
   # Check win conditions
   if game.won?
     t.say(value: "#{%w(shucks darn drat humbug).sample}, you win. I'll get you next time.", voice: 'Veronica')
-    t.say(value: "Good moves. Congratulations.", voice: 'Simon')
+    t.say(value: "Terrific sports man ship. Congratulations.", voice: 'Simon')
     return t.response
   elsif game.draw?
     return game_draw_response t
