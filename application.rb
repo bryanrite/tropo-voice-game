@@ -83,8 +83,8 @@ post '/next_guess.json' do
     t.say(value: "#{%w(shucks darn drat humbug).sample}, you win. I'll get you next time.", voice: 'Veronica')
     t.say(value: "Good moves. Congratulations.", voice: 'Simon')
     return t.response
-  elsif game.over?
-    return game_over_response t
+  elsif game.draw?
+    return game_draw_response t
   end
 
   # Computers turn.
@@ -97,8 +97,8 @@ post '/next_guess.json' do
   if game.won?
     t.say(value: "I win.  Better luck next time.", voice: 'Veronica')
     t.response
-  elsif game.over?
-    game_over_response t
+  elsif game.draw?
+    game_draw_response t
   else
     ask_for_move t, game
   end
@@ -122,7 +122,7 @@ private
     tropo.response
   end
 
-  def game_over_response tropo
+  def game_draw_response tropo
     tropo.say(value: "Looks like nobody wins this game.  Isn't Tic Tac Toe fun.", voice: 'Simon')
     tropo.say(value: "what a #{%w(great good boring exciting).sample} game. till next time.", voice: 'Veronica')
     tropo.response

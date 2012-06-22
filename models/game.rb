@@ -28,7 +28,7 @@ class Game < Sequel::Model
     end || false
   end
 
-  def over?
+  def draw?
     board.count{ |x| x =~ /\d/}.zero?
   end
 
