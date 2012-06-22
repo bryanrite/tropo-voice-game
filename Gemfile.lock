@@ -12,6 +12,7 @@ GEM
     json_pure (1.7.3)
     multi_json (1.3.6)
     multi_xml (0.5.1)
+    pg (0.13.2)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
@@ -45,6 +46,7 @@ DEPENDENCIES
   haml
   httparty
   json
+  pg
   sequel
   sinatra
   sinatra-contrib
